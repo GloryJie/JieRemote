@@ -3,7 +3,7 @@ package top.gloryjie.remote.protocol;
 import io.netty.buffer.PooledByteBufAllocator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import top.gloryjie.remote.msg.RemoteMsg;
+import top.gloryjie.remote.protocol.msg.RemoteMsg;
 
 import java.util.ArrayList;
 

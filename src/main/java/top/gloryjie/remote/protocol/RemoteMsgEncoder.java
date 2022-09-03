@@ -4,9 +4,9 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
-import top.gloryjie.remote.msg.RemoteMsg;
+import top.gloryjie.remote.protocol.msg.RemoteMsg;
 
-import static top.gloryjie.remote.msg.RemoteMsg.*;
+import static top.gloryjie.remote.protocol.msg.RemoteMsg.*;
 
 /**
  * @author jie-r

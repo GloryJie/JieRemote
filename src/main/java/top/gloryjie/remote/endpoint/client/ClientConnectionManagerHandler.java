@@ -1,4 +1,4 @@
-package top.gloryjie.remote.client;
+package top.gloryjie.remote.endpoint.client;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * TODO Deprecated this handler
  * @author jie-r
  * @since 2022/8/21
  */

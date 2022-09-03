@@ -4,7 +4,7 @@ import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import top.gloryjie.remote.msg.RemoteMsg;
+import top.gloryjie.remote.protocol.msg.RemoteMsg;
 
 import java.net.InetSocketAddress;
 import java.util.Map;

@@ -5,11 +5,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.DecoderException;
 import lombok.extern.slf4j.Slf4j;
-import top.gloryjie.remote.msg.RemoteMsg;
+import top.gloryjie.remote.protocol.msg.RemoteMsg;
 
 import java.util.List;
 
-import static top.gloryjie.remote.msg.RemoteMsg.*;
+import static top.gloryjie.remote.protocol.msg.RemoteMsg.*;
 
 /**
  * decoder is stateful，can't be sharable

@@ -1,4 +1,4 @@
-package top.gloryjie.remote.msg;
+package top.gloryjie.remote.protocol.msg;
 
 import java.util.concurrent.ExecutorService;
 

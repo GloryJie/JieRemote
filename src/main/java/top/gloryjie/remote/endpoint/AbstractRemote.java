@@ -1,11 +1,10 @@
 package top.gloryjie.remote.endpoint;
 
 import lombok.extern.slf4j.Slf4j;
-import top.gloryjie.remote.connection.Connection;
-import top.gloryjie.remote.msg.InnerMsgType;
-import top.gloryjie.remote.msg.MsgExecutorSelector;
-import top.gloryjie.remote.msg.RemoteMsg;
-import top.gloryjie.remote.msg.RemoteMsgHandler;
+import top.gloryjie.remote.protocol.msg.InnerMsgType;
+import top.gloryjie.remote.protocol.msg.MsgExecutorSelector;
+import top.gloryjie.remote.protocol.msg.RemoteMsg;
+import top.gloryjie.remote.protocol.msg.RemoteMsgHandler;
 import top.gloryjie.remote.serializer.Hessian2Serializer;
 import top.gloryjie.remote.serializer.ISerializer;
 import top.gloryjie.remote.serializer.InnerSerializer;
@@ -44,12 +43,6 @@ public class AbstractRemote {
         if (msg.getBody() != null) {
             msg.setBodyBytes(serializer.writeBody(msg.getBody()));
         }
-    }
-
-
-    protected void sendOnewayImpl(Connection connection, RemoteMsg<?> msg, long timeoutMillis) {
-
-
     }
 
     protected void registerInnerSerializer() {

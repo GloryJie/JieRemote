@@ -2,17 +2,17 @@ package top.gloryjie.remote;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import top.gloryjie.remote.client.ClientConfig;
-import top.gloryjie.remote.client.NettyRemoteClient;
+import top.gloryjie.remote.endpoint.client.ClientConfig;
+import top.gloryjie.remote.endpoint.client.NettyRemoteClient;
 import top.gloryjie.remote.endpoint.RemoteClient;
-import top.gloryjie.remote.msg.RemoteMsg;
-import top.gloryjie.remote.msg.RemoteMsgContext;
-import top.gloryjie.remote.msg.RemoteMsgHandler;
+import top.gloryjie.remote.protocol.msg.RemoteMsg;
+import top.gloryjie.remote.protocol.msg.RemoteMsgContext;
+import top.gloryjie.remote.protocol.msg.RemoteMsgHandler;
 import top.gloryjie.remote.serializer.Hessian2Serializer;
 import top.gloryjie.remote.serializer.ISerializer;
 import top.gloryjie.remote.serializer.InnerSerializer;
-import top.gloryjie.remote.server.NettyRemoteServer;
-import top.gloryjie.remote.server.ServerConfig;
+import top.gloryjie.remote.endpoint.server.NettyRemoteServer;
+import top.gloryjie.remote.endpoint.server.ServerConfig;
 
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;

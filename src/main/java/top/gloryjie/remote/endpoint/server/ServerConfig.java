@@ -1,4 +1,4 @@
-package top.gloryjie.remote.server;
+package top.gloryjie.remote.endpoint.server;
 
 import lombok.Getter;
 import lombok.Setter;

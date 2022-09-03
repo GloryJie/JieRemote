@@ -1,4 +1,4 @@
-package top.gloryjie.remote.msg;
+package top.gloryjie.remote.protocol.msg;
 
 /**
  * @author jie-r

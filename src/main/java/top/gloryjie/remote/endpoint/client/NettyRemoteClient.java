@@ -1,4 +1,4 @@
-package top.gloryjie.remote.client;
+package top.gloryjie.remote.endpoint.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -14,9 +14,9 @@ import top.gloryjie.remote.endpoint.AbstractRemote;
 import top.gloryjie.remote.endpoint.RemoteClient;
 import top.gloryjie.remote.exception.ExceptionProtocol;
 import top.gloryjie.remote.exception.RemoteException;
-import top.gloryjie.remote.msg.*;
 import top.gloryjie.remote.protocol.RemoteMsgDecoder;
 import top.gloryjie.remote.protocol.RemoteMsgEncoder;
+import top.gloryjie.remote.protocol.msg.*;
 import top.gloryjie.remote.serializer.ISerializer;
 import top.gloryjie.remote.util.RemoteUtil;
 

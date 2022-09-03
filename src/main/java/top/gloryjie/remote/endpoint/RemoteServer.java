@@ -1,7 +1,6 @@
 package top.gloryjie.remote.endpoint;
 
-import top.gloryjie.remote.msg.MsgExecutorSelector;
-import top.gloryjie.remote.msg.RemoteMsgHandler;
+import top.gloryjie.remote.protocol.msg.RemoteMsgHandler;
 import top.gloryjie.remote.serializer.ISerializer;
 
 /**
@@ -11,8 +10,6 @@ import top.gloryjie.remote.serializer.ISerializer;
 public interface RemoteServer extends RemoteService {
 
     void registerMsgTypeAndHandler(int msgType, Class<?> bodyType, RemoteMsgHandler handler);
-
-    void registerExecutorSelector(MsgExecutorSelector selector);
 
     void registerSerializer(int type, ISerializer serializer);
 

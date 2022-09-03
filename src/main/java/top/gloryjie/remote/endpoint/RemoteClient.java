@@ -1,7 +1,7 @@
 package top.gloryjie.remote.endpoint;
 
-import top.gloryjie.remote.msg.RemoteMsg;
-import top.gloryjie.remote.msg.RemoteMsgHandler;
+import top.gloryjie.remote.protocol.msg.RemoteMsg;
+import top.gloryjie.remote.protocol.msg.RemoteMsgHandler;
 import top.gloryjie.remote.serializer.ISerializer;
 
 import java.util.concurrent.CompletableFuture;

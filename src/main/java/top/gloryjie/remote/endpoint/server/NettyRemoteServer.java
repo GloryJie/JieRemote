@@ -1,4 +1,4 @@
-package top.gloryjie.remote.server;
+package top.gloryjie.remote.endpoint.server;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -14,9 +14,9 @@ import top.gloryjie.remote.endpoint.AbstractRemote;
 import top.gloryjie.remote.endpoint.RemoteServer;
 import top.gloryjie.remote.exception.ExceptionProtocol;
 import top.gloryjie.remote.exception.RemoteException;
-import top.gloryjie.remote.msg.*;
 import top.gloryjie.remote.protocol.RemoteMsgDecoder;
 import top.gloryjie.remote.protocol.RemoteMsgEncoder;
+import top.gloryjie.remote.protocol.msg.*;
 import top.gloryjie.remote.serializer.ISerializer;
 import top.gloryjie.remote.serializer.InnerSerializer;
 
@@ -123,11 +123,6 @@ public class NettyRemoteServer extends AbstractRemote implements RemoteServer {
         }
         msgTypeMap.put(msgType, bodyType);
         msgHandlerMap.put(msgType, handler);
-    }
-
-    @Override
-    public void registerExecutorSelector(MsgExecutorSelector selector) {
-        executorSelector = selector;
     }
 
     @Override
