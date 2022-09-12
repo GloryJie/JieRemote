@@ -135,7 +135,7 @@ public class NettyRemoteServer extends AbstractRemote implements RemoteServer {
 
 
     public void sendExceptionResp(Connection connection, int msgId, ExceptionProtocol exceptionProtocol) {
-        RemoteMsg<ExceptionProtocol> respMsg = new RemoteMsg<>();
+        RemoteMsg<ExceptionProtocol> respMsg = (RemoteMsg<ExceptionProtocol>) RemoteMsg.createResponse();
         respMsg.setSerializeType(InnerSerializer.HESSIAN2.getCode());
         respMsg.setCompressType(RemoteMsg.COMPRESS_TYPE_NONE);
         respMsg.setMsgType(InnerMsgType.REMOTE_EXCEPTION.getMsgType());

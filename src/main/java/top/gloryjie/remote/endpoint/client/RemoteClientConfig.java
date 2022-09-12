@@ -9,11 +9,7 @@ import lombok.Setter;
  */
 @Setter
 @Getter
-public class ClientConfig {
-
-    private String host;
-
-    private int port;
+public class RemoteClientConfig {
 
     private int connectTimeout = 500;
 

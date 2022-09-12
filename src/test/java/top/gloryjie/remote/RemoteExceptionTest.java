@@ -2,7 +2,8 @@ package top.gloryjie.remote;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import top.gloryjie.remote.endpoint.client.ClientConfig;
+import top.gloryjie.remote.connection.Connection;
+import top.gloryjie.remote.endpoint.client.RemoteClientConfig;
 import top.gloryjie.remote.endpoint.client.NettyRemoteClient;
 import top.gloryjie.remote.endpoint.RemoteClient;
 import top.gloryjie.remote.protocol.msg.RemoteMsg;
@@ -67,7 +68,7 @@ public class RemoteExceptionTest {
 
     @Test
     public void serializerNotFoundExceptionTest() throws Exception{
-        ClientConfig clientConfig = new ClientConfig();
+        RemoteClientConfig clientConfig = new RemoteClientConfig();
         clientConfig.setIoThreads(10);
         clientConfig.setQueueSize(1024);
 
@@ -76,7 +77,7 @@ public class RemoteExceptionTest {
         remoteClient.init();
         remoteClient.start();
 
-        RemoteMsg<String> msg = new RemoteMsg<>();
+        RemoteMsg<String> msg = (RemoteMsg<String>) RemoteMsg.createRequest();
         msg.setMsgType(1);
         msg.setSerializeType(exceptionSerializer);
 
@@ -85,7 +86,8 @@ public class RemoteExceptionTest {
         msg.setHeaderExt(header);
         msg.setBody("hello server");
 
-        RemoteMsg<?> responseMsg = remoteClient.send("127.0.0.1:8080", msg, 3100);
+        Connection connection = remoteClient.connect("127.0.0.1:8080", 12);
+        RemoteMsg<?> responseMsg = remoteClient.send(connection, msg, 3100);
         System.out.println("client received: " + responseMsg.getBody());
 
         TimeUnit.SECONDS.sleep(10);
@@ -95,7 +97,7 @@ public class RemoteExceptionTest {
 
     @Test
     public void serverDeserializerExceptionTest() throws Exception{
-        ClientConfig clientConfig = new ClientConfig();
+        RemoteClientConfig clientConfig = new RemoteClientConfig();
         clientConfig.setIoThreads(10);
         clientConfig.setQueueSize(1024);
 
@@ -105,7 +107,7 @@ public class RemoteExceptionTest {
         remoteClient.init();
         remoteClient.start();
 
-        RemoteMsg<String> msg = new RemoteMsg<>();
+        RemoteMsg<String> msg = (RemoteMsg<String>) RemoteMsg.createRequest();
         msg.setMsgType(1);
         msg.setSerializeType(exceptionSerializer);
 
@@ -114,7 +116,8 @@ public class RemoteExceptionTest {
         msg.setHeaderExt(header);
         msg.setBody("hello server");
 
-        RemoteMsg<?> responseMsg = remoteClient.send("127.0.0.1:8080", msg, 3100);
+        Connection connection = remoteClient.connect("127.0.0.1:8080", 123);
+        RemoteMsg<?> responseMsg = remoteClient.send(connection, msg, 3100);
         System.out.println("client received: " + responseMsg.getBody());
 
         TimeUnit.SECONDS.sleep(10);
@@ -124,7 +127,7 @@ public class RemoteExceptionTest {
 
     @Test
     public void handlerNotFoundTest() throws Exception{
-        ClientConfig clientConfig = new ClientConfig();
+        RemoteClientConfig clientConfig = new RemoteClientConfig();
         clientConfig.setIoThreads(10);
         clientConfig.setQueueSize(1024);
 
@@ -132,7 +135,7 @@ public class RemoteExceptionTest {
         remoteClient.init();
         remoteClient.start();
 
-        RemoteMsg<String> msg = new RemoteMsg<>();
+        RemoteMsg<String> msg = (RemoteMsg<String>) RemoteMsg.createRequest();
         msg.setMsgType(20);
         msg.setSerializeType(InnerSerializer.HESSIAN2.getCode());
 
@@ -141,7 +144,8 @@ public class RemoteExceptionTest {
         msg.setHeaderExt(header);
         msg.setBody("hello server");
 
-        RemoteMsg<?> responseMsg = remoteClient.send("127.0.0.1:8080", msg, 3100);
+        Connection connection = remoteClient.connect("127.0.0.1:8080", 123);
+        RemoteMsg<?> responseMsg = remoteClient.send(connection, msg, 3100);
         System.out.println("client received: " + responseMsg.getBody());
 
         TimeUnit.SECONDS.sleep(10);
@@ -151,7 +155,7 @@ public class RemoteExceptionTest {
 
     @Test
     public void handlerExceptionTest() throws Exception{
-        ClientConfig clientConfig = new ClientConfig();
+        RemoteClientConfig clientConfig = new RemoteClientConfig();
         clientConfig.setIoThreads(10);
         clientConfig.setQueueSize(1024);
 
@@ -159,7 +163,7 @@ public class RemoteExceptionTest {
         remoteClient.init();
         remoteClient.start();
 
-        RemoteMsg<String> msg = new RemoteMsg<>();
+        RemoteMsg<String> msg = (RemoteMsg<String>) RemoteMsg.createRequest();
         msg.setMsgType(normalMsgType);
         msg.setSerializeType(InnerSerializer.HESSIAN2.getCode());
 
@@ -168,7 +172,8 @@ public class RemoteExceptionTest {
         msg.setHeaderExt(header);
         msg.setBody("hello server");
 
-        RemoteMsg<?> responseMsg = remoteClient.send("127.0.0.1:8080", msg, 3100);
+        Connection connection = remoteClient.connect("127.0.0.1:8080", 123);
+        RemoteMsg<?> responseMsg = remoteClient.send(connection, msg, 3100);
         System.out.println("client received: " + responseMsg.getBody());
 
         TimeUnit.SECONDS.sleep(10);

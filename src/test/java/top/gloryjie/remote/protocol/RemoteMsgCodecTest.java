@@ -98,7 +98,7 @@ public class RemoteMsgCodecTest {
     }
 
     private RemoteMsg<String> getDefaultMsg() {
-        RemoteMsg<String> remoteMsg = new RemoteMsg<>();
+        RemoteMsg<String> remoteMsg = (RemoteMsg<String>) RemoteMsg.createRequest();
         remoteMsg.setSerializeType(1);
         remoteMsg.setCompressType(0);
         remoteMsg.setMsgType(1);

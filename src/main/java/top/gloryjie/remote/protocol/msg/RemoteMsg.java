@@ -109,7 +109,7 @@ public class RemoteMsg<T> {
 
 
     public static RemoteMsg<ExceptionProtocol> createExceptionResponse(RemoteMsg<?> reqMsg, ExceptionProtocol exceptionProtocol){
-        RemoteMsg<ExceptionProtocol> respMsg = new RemoteMsg<>();
+        RemoteMsg<ExceptionProtocol> respMsg = (RemoteMsg<ExceptionProtocol>) RemoteMsg.createResponse();
         respMsg.setSerializeType(InnerSerializer.HESSIAN2.getCode());
         respMsg.setCompressType(reqMsg.getCompressType());
         respMsg.setMsgId(reqMsg.getMsgId());
@@ -121,12 +121,30 @@ public class RemoteMsg<T> {
     }
 
     public static RemoteMsg<?> createResponse(RemoteMsg<?> reqMsg){
-        RemoteMsg<ExceptionProtocol> respMsg = new RemoteMsg<>();
+        RemoteMsg<?> respMsg = new RemoteMsg<>();
         respMsg.setSerializeType(reqMsg.getSerializeType());
         respMsg.setCompressType(reqMsg.getCompressType());
         respMsg.setMsgId(reqMsg.getMsgId());
         respMsg.setMsgType(reqMsg.getMsgType());
         respMsg.markRespFlag();
+        return respMsg;
+    }
+
+    public static RemoteMsg<?> createResponse(){
+        RemoteMsg<?> respMsg = new RemoteMsg<>();
+        respMsg.markRespFlag();
+        return respMsg;
+    }
+
+    public static RemoteMsg<?> createRequest(){
+        RemoteMsg<?> respMsg = new RemoteMsg<>();
+        respMsg.markReqFlag();
+        return respMsg;
+    }
+
+    public static RemoteMsg<?> createOneway(){
+        RemoteMsg<?> respMsg = new RemoteMsg<>();
+        respMsg.markOnewayFlag();
         return respMsg;
     }
 

@@ -34,7 +34,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 public class NettyRemoteClient extends AbstractRemote implements RemoteClient {
 
-    private final ClientConfig clientConfig;
+    private final RemoteClientConfig clientConfig;
     private final EventLoopGroup workerGroup;
     private final Bootstrap bootstrap;
 
@@ -48,11 +48,11 @@ public class NettyRemoteClient extends AbstractRemote implements RemoteClient {
     Lock connectionLock = new ReentrantLock();
 
 
-    public NettyRemoteClient(ClientConfig clientConfig) {
+    public NettyRemoteClient(RemoteClientConfig clientConfig) {
         this(clientConfig, new DefaultMsgExecutorSelector(clientConfig.getIoThreads(), clientConfig.getQueueSize()));
     }
 
-    public NettyRemoteClient(ClientConfig clientConfig, MsgExecutorSelector executorSelector) {
+    public NettyRemoteClient(RemoteClientConfig clientConfig, MsgExecutorSelector executorSelector) {
         super(executorSelector);
         this.clientConfig = clientConfig;
         bootstrap = new Bootstrap();
@@ -75,17 +75,9 @@ public class NettyRemoteClient extends AbstractRemote implements RemoteClient {
     }
 
     @Override
-    public RemoteMsg<?> send(String addr, RemoteMsg<?> msg, long timeoutMillis) {
-        // generate a connection
-        Connection connection = this.getAndCreateConnection(addr);
-        if (connection == null || !connection.isActive()) {
-            safeCloseConnection(connection);
-            throw new RemoteException(RemoteException.CLIENT_CONNECTION_NOT_ACTIVE, "connection is not valid");
-        }
-
+    public RemoteMsg<?> send(Connection connection, RemoteMsg<?> msg, long timeoutMillis) {
         var responseFuture = new CompletableFuture<RemoteMsg<?>>();
 
-        msg.markReqFlag();
         try {
             serializeRemoteMsg(msg);
         } catch (Exception e) {
@@ -137,26 +129,11 @@ public class NettyRemoteClient extends AbstractRemote implements RemoteClient {
     }
 
     @Override
-    public CompletableFuture<RemoteMsg<?>> sendAsync(String addr, RemoteMsg<?> msg, long timeoutMillis) {
+    public CompletableFuture<RemoteMsg<?>> sendAsync(Connection connection, RemoteMsg<?> msg, long timeoutMillis) {
         var responseFuture = new CompletableFuture<RemoteMsg<?>>();
-        Connection connection = null;
+
         RemoteException remoteException = null;
-        try {
-            connection = this.getAndCreateConnection(addr);
-        } catch (Exception e) {
-            if (e instanceof RemoteException exception) {
-                remoteException = exception;
-            } else {
-                remoteException = new RemoteException(RemoteException.CLIENT_CONNECTION_NOT_ACTIVE, "create connection fail", e);
-            }
-        }
 
-        if (connection == null || !connection.isActive()) {
-            safeCloseConnection(connection);
-            remoteException = new RemoteException(RemoteException.CLIENT_CONNECTION_NOT_ACTIVE, "connection is not active");
-        }
-
-        msg.markReqFlag();
         try {
             serializeRemoteMsg(msg);
         } catch (Exception e) {
@@ -168,10 +145,9 @@ public class NettyRemoteClient extends AbstractRemote implements RemoteClient {
             responseFuture.completeExceptionally(remoteException);
         } else {
             responseFutureMap.put(msg.getMsgId(), responseFuture);
-            Connection finalConnection = connection;
             connection.send(msg).whenComplete((Void, throwable) -> {
                 if (throwable != null) {
-                    log.error("[JieRemote][sendAsync] send err, msgId={} msgType={},remoteStr={}", msg.getMsgId(), msg.getMsgType(), finalConnection.getRemoteAddr());
+                    log.error("[JieRemote][sendAsync] send err, msgId={} msgType={},remoteStr={}", msg.getMsgId(), msg.getMsgType(), connection.getRemoteAddr());
                     // send fail
                     if (throwable instanceof EncoderException) {
                         responseFuture.completeExceptionally(new RemoteException(RemoteException.CLIENT_ENCODE_ERR, throwable));
@@ -189,7 +165,7 @@ public class NettyRemoteClient extends AbstractRemote implements RemoteClient {
                     responseFuture.completeExceptionally(exception);
                 } else {
                     // send success
-                    log.debug("[JieRemote][sendSyncImpl] send success, msgId={} msgType={},remoteStr={}", msg.getMsgId(), msg.getMsgType(), finalConnection.getRemoteAddr());
+                    log.debug("[JieRemote][sendSyncImpl] send success, msgId={} msgType={},remoteStr={}", msg.getMsgId(), msg.getMsgType(), connection.getRemoteAddr());
                 }
             });
         }
@@ -198,15 +174,7 @@ public class NettyRemoteClient extends AbstractRemote implements RemoteClient {
     }
 
     @Override
-    public void sendOneway(String addr, RemoteMsg<?> msg, long timeoutMillis) {
-        // generate a connection
-        Connection connection = this.getAndCreateConnection(addr);
-        if (connection == null || !connection.isActive()) {
-            safeCloseConnection(connection);
-            throw new RemoteException(RemoteException.CLIENT_CONNECTION_NOT_ACTIVE, "connection is not valid");
-        }
-
-        msg.markOnewayFlag();
+    public void sendOneway(Connection connection, RemoteMsg<?> msg, long timeoutMillis) {
         connection.send(msg).whenComplete((Void, throwable) -> {
             if (throwable == null) {
                 log.debug("[JieRemote][sendOneway] send success, msgId={} msgType={},remoteStr={}", msg.getMsgId(), msg.getMsgType(), connection.getRemoteAddr());
@@ -214,6 +182,28 @@ public class NettyRemoteClient extends AbstractRemote implements RemoteClient {
                 log.error("[JieRemote][sendOneway] send err, msgId={} msgType={},remoteStr={}", msg.getMsgId(), msg.getMsgType(), connection.getRemoteAddr());
             }
         });
+    }
+
+    @Override
+    public Connection connect(String addr, long timeoutMills) {
+        // create new connection
+        var future = this.bootstrap.connect(RemoteUtil.string2SocketAddress(addr));
+        future.awaitUninterruptibly();
+        if (future.cause() != null) {
+            log.warn("[JieRemote][client][connect] connect remote host fail, addr={}", addr, future.cause());
+            throw new RemoteException(RemoteException.CLIENT_CONNECT_ERR, future.cause());
+        }
+        var connection = Connection.getConnection(future.channel());
+        log.info("[JieRemote][client][connect] connect remote host success, addr={}, connection={}", addr, connection);
+        return connection;
+    }
+
+    @Override
+    public void closeConnection(Connection connection) {
+        if (connection == null) {
+            return;
+        }
+        connection.close();
     }
 
     @Override
@@ -360,28 +350,6 @@ public class NettyRemoteClient extends AbstractRemote implements RemoteClient {
         }
 
         return null;
-    }
-
-
-    public synchronized void safeCloseConnection(Connection connection) {
-        if (connection == null) {
-            return;
-        }
-        String remoteAddr = connection.getRemoteAddr();
-        boolean remove = false;
-        Connection pre = connectionMap.get(remoteAddr);
-        if (pre == null) {
-            log.info("[JieRemote][Client][safeCloseConnection] connection={} has been removed from table", remoteAddr);
-        } else if (pre != connection) {
-            log.info("[JieRemote][Client][safeCloseConnection] connection={} has been closed before, and has been created again, nothing to do.", remoteAddr);
-        } else {
-            remove = true;
-        }
-
-        if (remove) {
-            connectionMap.remove(remoteAddr);
-            connection.close();
-        }
     }
 
 }

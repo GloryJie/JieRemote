@@ -2,7 +2,8 @@ package top.gloryjie.remote;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import top.gloryjie.remote.endpoint.client.ClientConfig;
+import top.gloryjie.remote.connection.Connection;
+import top.gloryjie.remote.endpoint.client.RemoteClientConfig;
 import top.gloryjie.remote.endpoint.client.NettyRemoteClient;
 import top.gloryjie.remote.endpoint.RemoteClient;
 import top.gloryjie.remote.protocol.msg.RemoteMsg;
@@ -54,7 +55,7 @@ public class NormalCommunicateTest {
 
 
     public RemoteClient generateClient(){
-        ClientConfig clientConfig = new ClientConfig();
+        RemoteClientConfig clientConfig = new RemoteClientConfig();
         clientConfig.setIoThreads(10);
         clientConfig.setQueueSize(1024);
         RemoteClient remoteClient = new NettyRemoteClient(clientConfig);
@@ -65,7 +66,7 @@ public class NormalCommunicateTest {
 
     @Test
     public void clientSendSyncTest() throws Exception {
-        RemoteMsg<String> msg = new RemoteMsg<>();
+        RemoteMsg<String> msg = (RemoteMsg<String>) RemoteMsg.createRequest();
         msg.setMsgType(CUSTOM_MSG_TYPE);
         msg.setSerializeType(InnerSerializer.HESSIAN2.getCode());
 
@@ -75,14 +76,15 @@ public class NormalCommunicateTest {
         msg.setBody("hello server");
 
         RemoteClient remoteClient = generateClient();
-        RemoteMsg<?> responseMsg = remoteClient.send("127.0.0.1:8080", msg, 3100);
+        Connection connect = remoteClient.connect("127.0.0.1:8080", 3100);
+        RemoteMsg<?> responseMsg = remoteClient.send(connect, msg, 3100);
         log.info("client received: " + responseMsg.getBody());
         remoteClient.shutdown();
     }
 
     @Test
     public void clientSendAsyncTest() throws Exception {
-        RemoteMsg<String> msg = new RemoteMsg<>();
+        RemoteMsg<String> msg =  (RemoteMsg<String>) RemoteMsg.createRequest();
         msg.setMsgType(CUSTOM_MSG_TYPE);
         msg.setSerializeType(InnerSerializer.HESSIAN2.getCode());
 
@@ -92,7 +94,8 @@ public class NormalCommunicateTest {
         msg.setBody("hello server");
 
         RemoteClient remoteClient = generateClient();
-        CompletableFuture<RemoteMsg<?>> future = remoteClient.sendAsync("127.0.0.1:8080", msg, 3100);
+        Connection connection = remoteClient.connect("127.0.0.1:8080", 3100);
+        CompletableFuture<RemoteMsg<?>> future = remoteClient.sendAsync(connection, msg, 3100);
         future.whenComplete(new BiConsumer<RemoteMsg<?>, Throwable>() {
             @Override
             public void accept(RemoteMsg<?> msg, Throwable throwable) {
