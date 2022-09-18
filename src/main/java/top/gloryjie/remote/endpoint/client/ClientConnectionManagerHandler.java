@@ -1,5 +1,6 @@
 package top.gloryjie.remote.endpoint.client;
 
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author jie-r
  * @since 2022/8/21
  */
+@ChannelHandler.Sharable
 @Slf4j
 public class ClientConnectionManagerHandler extends ChannelInboundHandlerAdapter {
 
