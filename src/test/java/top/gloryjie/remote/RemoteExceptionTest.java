@@ -13,7 +13,7 @@ import top.gloryjie.remote.serializer.Hessian2Serializer;
 import top.gloryjie.remote.serializer.ISerializer;
 import top.gloryjie.remote.serializer.InnerSerializer;
 import top.gloryjie.remote.endpoint.server.NettyRemoteServer;
-import top.gloryjie.remote.endpoint.server.ServerConfig;
+import top.gloryjie.remote.endpoint.server.RemoteServerConfig;
 
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +32,7 @@ public class RemoteExceptionTest {
 
     @Test
     public void serverExceptionTest() throws Exception{
-        ServerConfig serverConfig = new ServerConfig("127.0.0.1", 8080);
+        RemoteServerConfig serverConfig = new RemoteServerConfig("127.0.0.1", 8080);
         serverConfig.setIoThreads(10);
 
         var remoteServer = new NettyRemoteServer(serverConfig);
@@ -70,7 +70,6 @@ public class RemoteExceptionTest {
     public void serializerNotFoundExceptionTest() throws Exception{
         RemoteClientConfig clientConfig = new RemoteClientConfig();
         clientConfig.setIoThreads(10);
-        clientConfig.setQueueSize(1024);
 
         RemoteClient remoteClient = new NettyRemoteClient(clientConfig);
         remoteClient.registerSerializer(exceptionSerializer, new Hessian2Serializer());
@@ -86,7 +85,7 @@ public class RemoteExceptionTest {
         msg.setHeaderExt(header);
         msg.setBody("hello server");
 
-        Connection connection = remoteClient.connect("127.0.0.1:8080", 12);
+        Connection connection = remoteClient.connect("127.0.0.1:8080");
         RemoteMsg<?> responseMsg = remoteClient.send(connection, msg, 3100);
         System.out.println("client received: " + responseMsg.getBody());
 
@@ -99,7 +98,7 @@ public class RemoteExceptionTest {
     public void serverDeserializerExceptionTest() throws Exception{
         RemoteClientConfig clientConfig = new RemoteClientConfig();
         clientConfig.setIoThreads(10);
-        clientConfig.setQueueSize(1024);
+
 
         RemoteClient remoteClient = new NettyRemoteClient(clientConfig);
         remoteClient.registerSerializer(exceptionSerializer, new Hessian2Serializer());
@@ -116,7 +115,7 @@ public class RemoteExceptionTest {
         msg.setHeaderExt(header);
         msg.setBody("hello server");
 
-        Connection connection = remoteClient.connect("127.0.0.1:8080", 123);
+        Connection connection = remoteClient.connect("127.0.0.1:8080");
         RemoteMsg<?> responseMsg = remoteClient.send(connection, msg, 3100);
         System.out.println("client received: " + responseMsg.getBody());
 
@@ -129,7 +128,7 @@ public class RemoteExceptionTest {
     public void handlerNotFoundTest() throws Exception{
         RemoteClientConfig clientConfig = new RemoteClientConfig();
         clientConfig.setIoThreads(10);
-        clientConfig.setQueueSize(1024);
+
 
         RemoteClient remoteClient = new NettyRemoteClient(clientConfig);
         remoteClient.init();
@@ -144,7 +143,7 @@ public class RemoteExceptionTest {
         msg.setHeaderExt(header);
         msg.setBody("hello server");
 
-        Connection connection = remoteClient.connect("127.0.0.1:8080", 123);
+        Connection connection = remoteClient.connect("127.0.0.1:8080");
         RemoteMsg<?> responseMsg = remoteClient.send(connection, msg, 3100);
         System.out.println("client received: " + responseMsg.getBody());
 
@@ -157,7 +156,6 @@ public class RemoteExceptionTest {
     public void handlerExceptionTest() throws Exception{
         RemoteClientConfig clientConfig = new RemoteClientConfig();
         clientConfig.setIoThreads(10);
-        clientConfig.setQueueSize(1024);
 
         RemoteClient remoteClient = new NettyRemoteClient(clientConfig);
         remoteClient.init();
@@ -172,7 +170,7 @@ public class RemoteExceptionTest {
         msg.setHeaderExt(header);
         msg.setBody("hello server");
 
-        Connection connection = remoteClient.connect("127.0.0.1:8080", 123);
+        Connection connection = remoteClient.connect("127.0.0.1:8080");
         RemoteMsg<?> responseMsg = remoteClient.send(connection, msg, 3100);
         System.out.println("client received: " + responseMsg.getBody());
 

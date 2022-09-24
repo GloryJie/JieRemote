@@ -49,14 +49,14 @@ public class NettyRemoteClient extends AbstractRemote implements RemoteClient {
 
 
     public NettyRemoteClient(RemoteClientConfig clientConfig) {
-        this(clientConfig, new DefaultMsgExecutorSelector(clientConfig.getIoThreads(), clientConfig.getQueueSize()));
+        this(clientConfig, new DefaultMsgExecutorSelector(clientConfig.getHandleMsgThreads(), clientConfig.getHandleMsgQueueSize()));
     }
 
     public NettyRemoteClient(RemoteClientConfig clientConfig, MsgExecutorSelector executorSelector) {
         super(executorSelector);
         this.clientConfig = clientConfig;
         bootstrap = new Bootstrap();
-        workerGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("clientGroup"));
+        workerGroup = new NioEventLoopGroup(clientConfig.getIoThreads(), new DefaultThreadFactory("remoteClient"));
     }
 
 
@@ -174,7 +174,14 @@ public class NettyRemoteClient extends AbstractRemote implements RemoteClient {
     }
 
     @Override
-    public void sendOneway(Connection connection, RemoteMsg<?> msg, long timeoutMillis) {
+    public void sendOneway(Connection connection, RemoteMsg<?> msg) {
+        msg.markOnewayFlag();
+        try {
+            serializeRemoteMsg(msg);
+        } catch (Exception e) {
+            log.error("[JieRemote][Client][sendSyncImpl]serialize msg err, msgType={}, serializeType={}", msg.getMsgType(), msg.getSerializeType(), e);
+            throw new RemoteException(RemoteException.CLIENT_SERIALIZE_ERR, "send sync serialize err", e);
+        }
         connection.send(msg).whenComplete((Void, throwable) -> {
             if (throwable == null) {
                 log.debug("[JieRemote][sendOneway] send success, msgId={} msgType={},remoteStr={}", msg.getMsgId(), msg.getMsgType(), connection.getRemoteAddr());
@@ -185,7 +192,7 @@ public class NettyRemoteClient extends AbstractRemote implements RemoteClient {
     }
 
     @Override
-    public Connection connect(String addr, long timeoutMills) {
+    public Connection connect(String addr) {
         // create new connection
         var future = this.bootstrap.connect(RemoteUtil.string2SocketAddress(addr));
         future.awaitUninterruptibly();

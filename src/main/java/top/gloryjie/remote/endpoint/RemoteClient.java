@@ -27,9 +27,9 @@ public interface RemoteClient extends RemoteService{
 
     CompletableFuture<RemoteMsg<?>> sendAsync(Connection connection, RemoteMsg<?> msg, long timeoutMillis);
 
-    void sendOneway(Connection connection, RemoteMsg<?> msg, long timeoutMillis);
+    void sendOneway(Connection connection, RemoteMsg<?> msg);
 
-    Connection connect(String addr, long timeoutMills);
+    Connection connect(String addr);
 
     void closeConnection(Connection connection);
 

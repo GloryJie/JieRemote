@@ -36,7 +36,7 @@ import java.util.stream.IntStream;
 public class NettyRemoteServer extends AbstractRemote implements RemoteServer {
 
     // config & netty component
-    private final ServerConfig serverConfig;
+    private final RemoteServerConfig serverConfig;
     private final NioEventLoopGroup bossThreads;
     private final NioEventLoopGroup workerThreads;
     private final ServerBootstrap serverBootstrap;
@@ -46,11 +46,11 @@ public class NettyRemoteServer extends AbstractRemote implements RemoteServer {
     private NettyConnectionManageHandler connectionManageHandler;
     private NettyServerMsgHandler serverMsgHandler;
 
-    public NettyRemoteServer(ServerConfig serverConfig) {
-        this(serverConfig, new DefaultMsgExecutorSelector(serverConfig.getBizThreads(), serverConfig.getBizQueueSize()));
+    public NettyRemoteServer(RemoteServerConfig serverConfig) {
+        this(serverConfig, new DefaultMsgExecutorSelector(serverConfig.getHandleMsgThreads(), serverConfig.getHandleMsgQueueSize()));
     }
 
-    public NettyRemoteServer(ServerConfig serverConfig, MsgExecutorSelector executorSelector) {
+    public NettyRemoteServer(RemoteServerConfig serverConfig, MsgExecutorSelector executorSelector) {
         super(executorSelector);
         this.serverConfig = serverConfig;
         serverBootstrap = new ServerBootstrap();

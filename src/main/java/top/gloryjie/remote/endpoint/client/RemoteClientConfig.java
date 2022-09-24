@@ -13,9 +13,10 @@ public class RemoteClientConfig {
 
     private int connectTimeout = 500;
 
-    private int ioThreads = 10;
+    private int ioThreads = 8;
 
-    private int queueSize = 1024;
+    private int handleMsgThreads = 4;
+    private int handleMsgQueueSize = 512;
 
 
 }

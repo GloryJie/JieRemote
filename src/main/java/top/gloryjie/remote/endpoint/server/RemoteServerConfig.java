@@ -10,7 +10,7 @@ import lombok.Setter;
  */
 @Setter
 @Getter
-public class ServerConfig {
+public class RemoteServerConfig {
 
     private String bindIp;
 
@@ -18,20 +18,20 @@ public class ServerConfig {
 
     private int ioThreads;
 
-    private int bizThreads = 10;
+    private int handleMsgThreads = 10;
 
-    private int bizQueueSize = 1024;
+    private int handleMsgQueueSize = 1024;
 
     private int backlog = 1024;
 
-    public ServerConfig(String bindIp, int port) {
+    public RemoteServerConfig(String bindIp, int port) {
         this.bindIp = bindIp;
         this.port = port;
         // default use availableProcessors
         ioThreads = getDefaultIoThreads();
     }
 
-    public ServerConfig(String bindIp, int port, int ioThreads) {
+    public RemoteServerConfig(String bindIp, int port, int ioThreads) {
         this.bindIp = bindIp;
         this.port = port;
         this.ioThreads = ioThreads;
