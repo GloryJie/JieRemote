@@ -25,6 +25,7 @@ public class RemoteMsgEncoder extends MessageToByteEncoder<RemoteMsg<?>> {
         byteBuf.writeShortLE(0);
 
         // header param
+        byteBuf.writeByte(msg.getVersion());
         byteBuf.writeByte(msg.getSerializeType());
         byteBuf.writeByte(msg.getCompressType());
         byteBuf.writeShortLE(msg.getMsgType());

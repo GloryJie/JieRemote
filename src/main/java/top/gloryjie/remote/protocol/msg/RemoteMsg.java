@@ -25,7 +25,7 @@ public class RemoteMsg<T> {
     public static final int DESC_TOTAL_LEN_BYTES = 4;
     public static final int DESC_HEADER_LEN_BYTES = 2;
     // HEADER_FIX_BYTES not include
-    public static final int HEADER_FIX_BYTES = 9;
+    public static final int HEADER_FIX_BYTES = 10;
 
     public static final int REQ_TYPE = 0;
     public static final int RESP_TYPE = 1;
@@ -33,7 +33,11 @@ public class RemoteMsg<T> {
 
     public static final int COMPRESS_TYPE_NONE = 0;
 
+
+    public static final int DEFAULT_VERSION = 1;
     private static AtomicInteger msg_ID = new AtomicInteger(0);
+
+    private int version = DEFAULT_VERSION;
 
     /**
      * 序列化方式,1byte

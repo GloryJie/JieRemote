@@ -53,6 +53,7 @@ public class RemoteMsgDecoder extends ByteToMessageDecoder {
                 int headerLen = frameBuf.readShortLE();
 
                 // header param
+                protocol.setVersion(frameBuf.readByte());
                 protocol.setSerializeType(frameBuf.readByte());
                 protocol.setCompressType(frameBuf.readByte());
                 protocol.setMsgType(frameBuf.readShortLE());
