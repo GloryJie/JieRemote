@@ -1,9 +1,9 @@
 
 # JieRemote
 
-基于Netty的自有协议远程通信，主要是封装了网络通信中的协议层、序列化层。
+基于Netty的自有协议远程通信，主要是封装了网络通信中的数据协议层、序列化层。
 
-提供不同序列化方式的注册、不同消息承载类型的注册
+支持序列化方式的注册、接收不同消息类型。
 
 
 ## 自定义协议
@@ -27,14 +27,103 @@
 
 消息的编解码参见：RemoteMsgEncoder、RemoteMsgDecoder
 
-## 消息的流转处理
+## 客户端
 
-RemoteClient发送消息后，会在Netty的IO线程中完成序列化操作，之后将RemoteMsg发送到远端。
+客户端使用RemoteClient进行定义，实现类有NettyRemoteClient。
+RemoteClient提供了创建链接、发送消息的能力。
 
-RemoteServer接收到消息后，在Netty的IO线程完成反序列化操作，之后通过MsgExecutorSelector根据消息类型选择出Executor进行消息的处理。
+客户端配置如下
+```java
+public class RemoteClientConfig {
+    // 链接超时时间
+    private int connectTimeout = 500;
+    // io线程数
+    private int ioThreads = 8;
+    // 如果客户端需要接收服务端的请求，则下面配置会生效
+    // 客户端处理消息请求的的线程数
+    private int handleMsgThreads = 4;
+    // 客户端处理消息请求的队列大小
+    private int handleMsgQueueSize = 512;
+}
+```
+
+客户端的创建
+```java
+RemoteClientConfig clientConfig = new RemoteClientConfig();
+// 客户端io线程数
+clientConfig.setIoThreads(10);
+RemoteClient remoteClient = new NettyRemoteClient(clientConfig);
+// 初始化
+remoteClient.init();
+// 启动
+remoteClient.start();
+```
+
+## 服务端
+
+服务端使用RemoteServer表示，其实现类为NettyRemoteServer。
+
+服务端配置
+```java
+private String bindIp;
+private int port;
+private int ioThreads;
+// 服务端是会接收请求消息进行处理的，如果没有自定义MsgExecutorSelector，则下面配置会生效
+private int handleMsgThreads = 10;
+private int handleMsgQueueSize = 1024;
+private int backlog = 1024;
+```
+
+创建服务端
+```java
+RemoteServerConfig serverConfig = new RemoteServerConfig("127.0.0.1", 8080);
+serverConfig.setIoThreads(10);
+RemoteServer remoteServer = new NettyRemoteServer(serverConfig);
+remoteServer.init();
+remoteServer.start();
+```
+
+## 客户端和服务端之间的连接
+
+Connection类表示一个链接，只是简单的包装Netty的Channel，可以保存一些KV信息
+
+## 序列化方式
+
+内置了两种序列化方式：JDK自带的序列化、HESSIAN2，在创建RemoteMsg时，通过InnerSerializer枚举获取到对应的code来使用内置的序列化。
+
+自定义序列化方式需要实现接口：ISerializer。
+
+自定义序列化方式，需要在分别在RemoteClient、RemoteServer两端中进行注册，否咋Client发送的序列化类型在Server端无法识别。
+```java
+RemoteClient.registerSerializer(int type, ISerializer);
+RemoteServer.registerSerializer(int type, ISerializer);
+```
+
+## 消息类型以及处理器
+
+RemoteMsg中body是泛型，具体的类型未确定，在反序列化的过程中，需要指定具体的类型Class。 并且在接收到对应的请求消息后，需要进行处理，所以需要一个消息处理器。
+
+消息处理器RemoteMsgHandler定义如下
+```java
+public interface RemoteMsgHandler {
+    
+    RemoteMsg<?> handleMsg(RemoteMsgContext context);
+
+}
+```
+
+为此，一个消息类型需要三个参数：数值代表消息类型、实际的消息类型body承载类Class、对应的消息处理器。 服务端、客户端都提供了注册接口
+
+```java
+void registerMsgTypeAndHandler(int msgType, Class<?> bodyType, RemoteMsgHandler handler);
+```
+
+通常来说，只有服务端需要接收请求消息进行处理，所以一般只需要服务端进行注册即可。如果有服务端主动向客户端发送请求的情况，客户端也需要进行注册。
 
 
-## 使用
+
+
+## 快速开始使用
 
 可以参考类NormalCommunicateTest
 
@@ -80,14 +169,12 @@ remoteServer.start();
 
 ### 客户端
 
-创建一个和链接无关的客户端
+创建并启动客户端
 
 ```java
 RemoteClientConfig clientConfig = new RemoteClientConfig();
 // 客户端io线程数
 clientConfig.setIoThreads(10);
-// 客户端的队列大小
-clientConfig.setQueueSize(1024);
 RemoteClient remoteClient = new NettyRemoteClient(clientConfig);
 // 初始化
 remoteClient.init();
@@ -95,7 +182,7 @@ remoteClient.init();
 remoteClient.start();
 ```
 
-和server端进行链接，得到一个Connection链接对象
+和server端进行连接，得到一个Connection对象
 
 ```
 Connection connect = remoteClient.connect("127.0.0.1:8080", 3100);
@@ -117,10 +204,10 @@ msg.setBody("hello server");
 
 ```java
 // 同步发送，参数分别为：指定发送的链接、消息、超时时间
-RemoteMsg<?> responseMsg = remoteClient.send(connect, msg, 3100);
+RemoteMsg<?> responseMsg = remoteClient.send(connect, msg, 1000);
 
 // 异步发送
-CompletableFuture<RemoteMsg<?>> future = remoteClient.sendAsync(connection, msg, 3100);
+CompletableFuture<RemoteMsg<?>> future = remoteClient.sendAsync(connection, msg, 1000);
 future.whenComplete(new BiConsumer<RemoteMsg<?>, Throwable>() {
     @Override
     public void accept(RemoteMsg<?> msg, Throwable throwable) {
@@ -128,8 +215,8 @@ future.whenComplete(new BiConsumer<RemoteMsg<?>, Throwable>() {
     }
 });
 
-// 单向发送
-remoteClient.sendOneway(connection, msg, 3100);
+// 单向发送, 无超时时间
+remoteClient.sendOneway(connection, msg);
 ```
 
 ## 规划
